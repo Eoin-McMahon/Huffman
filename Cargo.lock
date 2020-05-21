@@ -3,3 +3,12 @@
 [[package]]
 name = "huffman"
 version = "0.1.0"
+dependencies = [
+ "math",
+]
+
+[[package]]
+name = "math"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7c872295791dbc560250d70fcae4c8da229d6f3649309a0a5b81fa0795231e5b"

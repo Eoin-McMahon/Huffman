@@ -96,6 +96,30 @@ fn encode_string(str: &str, code_table: &HashMap<char, String>) -> String {
     return encoded;
 }
 
+fn decode_string(str: &str, root: &Box<Node>) -> String {
+    let mut decoded = String::from("");
+    let mut node = root;
+
+    for num in str.chars() {
+        if num == '0' {
+            if let Some(ref l) = node.left {
+                node = l;
+            }
+        }
+        else {
+            if let Some(ref r) = node.right {
+                node = r;
+            }
+        }
+
+        if let Some(ch) = node.ch {
+            decoded.push(ch);
+            node = root;
+        }
+    }
+
+    return decoded;
+}
 
 fn main() {
     println!("String to be encoded:");
@@ -118,10 +142,21 @@ fn main() {
 
     let mut code_table:HashMap<char, String> = HashMap::new();
     assign_codes(&root, &mut code_table, empty_string);
+
     let encoded:String = encode_string(&raw, &code_table);
-    println!("Huffman Encoded string: {:?}", encoded);
+    println!("\nEncoded string: {:?}", encoded);
 
 
+    let decoded:String = decode_string(&encoded, &root);
+    println!("Decoded string: {:?}", decoded);
+
+    // calculate compression ratio
+    let initial_size: f64 = (raw.len() * 8) as f64;
+    let encoded_size: f64 = encoded.len() as f64;
+    let compression_ratio: f64 = ((initial_size - encoded_size) / initial_size) * 100.0;
+
+    println!("\n\ninitial size: {}\nencoded_size: {}\ncompression ratio: {:.2}%",
+             initial_size, encoded_size, compression_ratio)
 }
 
 

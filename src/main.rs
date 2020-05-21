@@ -1,6 +1,6 @@
 use std::collections::HashMap;
-use std::fmt;
 
+#[derive(Debug)]
 struct Node {
     ch: Option<char>,
     freq: i32,
@@ -14,7 +14,7 @@ impl Node {
     }
 }
 
-fn frequency_map(s: &str) -> HashMap<char, i32> {
+fn build_frequency_map(s: &str) -> HashMap<char, i32> {
     let mut freq_map = HashMap::new();
     for ch in s.chars() {
         let count = freq_map.entry(ch).or_insert(0); // get count from hashmap otherwise add 0
@@ -34,22 +34,15 @@ fn new_node(freq: i32, ch: Option<char>) -> Node {
 }
 
 fn build_huffman_tree(mut nodes: Vec<Box<Node>>) -> Box<Node> {
-    for node in nodes.iter() {
-    println!("{:?} {}",node.ch, node.freq);
-    }
     while nodes.len() > 1 {
-        nodes.sort_by(|x, y| (&(x.freq)).cmp(&(y.freq)));
+        nodes.sort_by(|x, y| (&(y.freq)).cmp(&(x.freq)));
         let x = nodes.pop().unwrap();
-        println!("char: {:?}\t freq: {}",x.ch, x.freq);
         let y = nodes.pop().unwrap();
-        println!("char: {:?}\t freq: {}",y.ch,  y.freq);
         let mut z = new_node(x.freq + y.freq, None).to_box();
-
         z.left = Some(x);
         z.right = Some(y);
         nodes.push(z);
     }
-
     // return root of huffman tree
     let root = nodes.pop().unwrap();
     return root;
@@ -96,18 +89,17 @@ fn encode_string(str: &str, code_table: &HashMap<char, String>) -> String {
 fn main() {
     let raw: String = String::from("my name is eoin mcmahon");
 
-    let freqs = frequency_map(&raw);
+    let freqs = build_frequency_map(&raw);
     let empty_string:String = String::from("");
-    println!("{:?}", freqs);
     
-    let nodes:Vec<Box<Node>> = build_node_vector(freqs);
+    let mut nodes:Vec<Box<Node>> = build_node_vector(freqs);
     let root:Box<Node> = build_huffman_tree(nodes);
 
     let mut code_table:HashMap<char, String> = HashMap::new();
     assign_codes(&root, &mut code_table, empty_string);
-    println!("{:?}", code_table);
     let encoded:String = encode_string(&raw, &code_table);
-    println!("{:?}", encoded);
+    println!("Initial string to encode: {:?}", raw);
+    println!("Huffman Encoded string: {:?}", encoded);
 
 
 }

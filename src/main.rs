@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use std::io;
 
 #[derive(Debug)]
 struct Node {
@@ -9,41 +10,50 @@ struct Node {
 }
 
 impl Node {
+    // allocate memory on heap for node
     fn to_box(self) -> Box<Node> {
         return Box::new(self);
+    }
+
+    // constructor for a new node
+    pub fn new(freq: i32, ch: Option<char>) -> Self {
+        return Self {
+            ch: ch,
+            freq: freq,
+            left: None,
+            right: None,
+        };
     }
 }
 
 fn build_frequency_map(s: &str) -> HashMap<char, i32> {
     let mut freq_map = HashMap::new();
     for ch in s.chars() {
-        let count = freq_map.entry(ch).or_insert(0); // get count from hashmap otherwise add 0
+        // get count from hashmap otherwise add 0 as the v
+        let count = freq_map.entry(ch).or_insert(0);
         *count += 1;
     }
 
     return freq_map;
 }
 
-fn new_node(freq: i32, ch: Option<char>) -> Node {
-    return Node {
-        freq,
-        ch,
-        left: None,
-        right: None,
-    };
-}
 
 fn build_huffman_tree(mut nodes: Vec<Box<Node>>) -> Box<Node> {
+    // reduce list down to the root node
     while nodes.len() > 1 {
         nodes.sort_by(|x, y| (&(y.freq)).cmp(&(x.freq)));
+        // form subtree for x and y
         let x = nodes.pop().unwrap();
         let y = nodes.pop().unwrap();
-        let mut z = new_node(x.freq + y.freq, None).to_box();
+        // parent has childrens combined frequency and no associated character
+        let mut z = Node::new(x.freq + y.freq, None).to_box();
         z.left = Some(x);
         z.right = Some(y);
+        
         nodes.push(z);
     }
-    // return root of huffman tree
+
+    // return root of huffman tree for traversal
     let root = nodes.pop().unwrap();
     return root;
 }
@@ -66,7 +76,7 @@ fn assign_codes(node: &Box<Node>, code_table: &mut HashMap<char, String>, code: 
 fn build_node_vector(freqs: HashMap<char, i32>) -> Vec<Box<Node>> {
     // map over k, v tuples and create nodes for them.
     let nodes:Vec<Box<Node>> = freqs.iter()
-                                    .map(|x| new_node(*(x.1), Some(*(x.0))).to_box())
+                                    .map(|x| Node::new(*(x.1), Some(*(x.0))).to_box())
                                     .collect();
 
     return nodes;
@@ -78,6 +88,7 @@ fn encode_string(str: &str, code_table: &HashMap<char, String>) -> String {
     let mut code:Option<&String>;
 
     for ch in str.chars() {
+        // push character code to output string
         code = code_table.get(&ch);
         encoded.push_str(code.unwrap());
     }
@@ -87,18 +98,27 @@ fn encode_string(str: &str, code_table: &HashMap<char, String>) -> String {
 
 
 fn main() {
-    let raw: String = String::from("my name is eoin mcmahon");
+    println!("String to be encoded:");
+
+    let mut raw = String::new();
+
+    io::stdin()
+        .read_line(&mut raw)
+        .expect("Failed to read string");
+    
+    // trim newline from string
+    let len = raw.trim_end_matches(&['\r', '\n'][..]).len();
+    raw.truncate(len);
 
     let freqs = build_frequency_map(&raw);
     let empty_string:String = String::from("");
     
-    let mut nodes:Vec<Box<Node>> = build_node_vector(freqs);
+    let nodes:Vec<Box<Node>> = build_node_vector(freqs);
     let root:Box<Node> = build_huffman_tree(nodes);
 
     let mut code_table:HashMap<char, String> = HashMap::new();
     assign_codes(&root, &mut code_table, empty_string);
     let encoded:String = encode_string(&raw, &code_table);
-    println!("Initial string to encode: {:?}", raw);
     println!("Huffman Encoded string: {:?}", encoded);
 
 

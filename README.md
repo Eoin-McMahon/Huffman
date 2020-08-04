@@ -1,4 +1,4 @@
-# Huffman-Rust: Huffman coding implementation in Rust
+# 🗄️ Huffman-Rust: Huffman coding implementation in Rust
 
 My first project in rust!
 based on this python implementation: http://www.openbookproject.net/py4fun/huffman/huffman.html
